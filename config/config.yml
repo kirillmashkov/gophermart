@@ -1,0 +1,9 @@
+logger:
+  level: "info"
+  development: false
+  disable-caller: false
+  disable-stacktracce: false
+  encoding: "json"
+  output-paths: ["stdout"]
+  error-output-paths: ["stderr"]
+  
