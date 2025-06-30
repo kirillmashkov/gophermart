@@ -182,14 +182,14 @@ func GetBalanceOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.WriteHeader(http.StatusOK)
+	
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	res.WriteHeader(http.StatusOK)
 }
 
 func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
@@ -217,14 +217,14 @@ func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.WriteHeader(http.StatusOK)
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	
-	res.WriteHeader(http.StatusOK)
+
 }
 
 func GetBalance(res http.ResponseWriter, req *http.Request) {
@@ -248,12 +248,11 @@ func GetBalance(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.WriteHeader(http.StatusOK)
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	res.WriteHeader(http.StatusOK)
 }
