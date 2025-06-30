@@ -25,40 +25,40 @@ func NewServiceUser(log *zap.Logger, ru *storage.RepositoryUser, su *util.Securi
 	return &ServiceUser{log: log, repositoryuser: ru, securityUtil: su, cfg: cfg}
 }
 
-func (s *ServiceUser) RegisterUser(ctx context.Context, login string, password string) (error, string) {
+func (s *ServiceUser) RegisterUser(ctx context.Context, login string, password string) (string, error) {
 	s.log.Info("Register new profile", zap.String("login", login), zap.String("password", password))
 	userID, err := s.repositoryuser.RegisterUser(ctx, login, password)
 	if err != nil {
 		s.log.Error("Can't register new user", zap.Error(err))
-		return err, ""
+		return "", err
 	}
 
 	token, err := s.securityUtil.BuildJWTString(userID)
 	if err != nil {
 		s.log.Error("Can't generate token", zap.Error(err))
-		return err, ""
+		return "", err
 	}
 
-	return nil, token
+	return token, nil
 }
 
-func (s *ServiceUser) LoginUser(ctx context.Context, login string, password string) (error, bool, string) {
+func (s *ServiceUser) LoginUser(ctx context.Context, login string, password string) (bool, string, error) {
 	checkUser, userID, err := s.repositoryuser.GetUserID(ctx, login, password)
 
 	if err != nil {
-		return err, false, ""
+		return false, "", err
 	}
 
-	var token string = ""
+	var token = ""
 	if checkUser {
 		token, err = s.securityUtil.BuildJWTString(userID)
 		if err != nil {
 			s.log.Error("Error build jwt")
-			return err, false, ""
+			return false, "", err
 		}
 	}
 
-	return nil, checkUser, token
+	return checkUser, token, nil
 }
 
 func (s *ServiceUser) Order(ctx context.Context, orderNum int64, userID string) error {

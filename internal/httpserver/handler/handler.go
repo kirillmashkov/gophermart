@@ -28,7 +28,7 @@ func RegisterUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err, token := app.ServiceUser.RegisterUser(req.Context(), request.Login, request.Password)
+	token, err := app.ServiceUser.RegisterUser(req.Context(), request.Login, request.Password)
 	if err != nil {
 		if errors.Is(err, model.ErrDuplicateLogin) {
 			res.WriteHeader(http.StatusConflict)
@@ -56,7 +56,7 @@ func LoginUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err, checkUser, token := app.ServiceUser.LoginUser(req.Context(), request.Login, request.Password)
+	checkUser, token, err := app.ServiceUser.LoginUser(req.Context(), request.Login, request.Password)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
@@ -67,7 +67,7 @@ func LoginUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Authorization", "Bearer "+token)
+	res.Header().Set("Authorization", "Bearer " + token)
 	res.WriteHeader(http.StatusOK)
 }
 

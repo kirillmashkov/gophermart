@@ -27,7 +27,7 @@ func Auth(next http.Handler) http.Handler {
 
 		splits := strings.Split(auth, "Bearer ")
 		token := splits[1]
-		err, userID := getUserIDFromToken(token)
+		userID, err := getUserIDFromToken(token)
 
 		if err != nil {
 			c := context.WithValue(r.Context(), u, "")
@@ -40,7 +40,7 @@ func Auth(next http.Handler) http.Handler {
 	})
 }
 
-func getUserIDFromToken(tokenString string) (error, string) {
+func getUserIDFromToken(tokenString string) (string, error) {
 
 	claims := &util.Claims{}
 
@@ -54,19 +54,19 @@ func getUserIDFromToken(tokenString string) (error, string) {
 
 	if err != nil {
 		app.Log.Warn("Can't parse token")
-		return err, ""
+		return "", err
 	}
 
 	if !token.Valid {
 		app.Log.Warn("Token is not valid")
-		return nil, ""
+		return "", err
 	}
 
 	if claims.UserID == "" {
 		app.Log.Warn("Token doesn't contain UserID")
-		return nil, ""
+		return "", err
 	}
 
-	return nil, claims.UserID
+	return claims.UserID, nil
 }
 
