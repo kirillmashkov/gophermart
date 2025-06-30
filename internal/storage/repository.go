@@ -129,7 +129,7 @@ func (r *RepositoryUser) CreateBalanceOrder(orderNum int64, userID string) (stri
 	return orderID, nil
 }
 
-func (r *RepositoryUser) CreateWithdrawnOrder(ctx context.Context, orderNum int64, userID string, sum int) error {
+func (r *RepositoryUser) CreateWithdrawnOrder(ctx context.Context, orderNum int64, userID string, sum float32) error {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 

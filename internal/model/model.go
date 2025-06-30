@@ -20,7 +20,7 @@ type OrderToRequestAccrual struct {
 
 type WithdrawRequest struct {
 	OrderNum int64 `json:"order"`
-	Sum int `json:"sum"`
+	Sum float32 `json:"sum"`
 }
 
 type AccrualResponse struct {
@@ -32,26 +32,26 @@ type AccrualResponse struct {
 type OrdersDB struct {
 	Number     string
 	Status     string
-	Sum        int
+	Sum        float32
 	UploadedAt time.Time
 }
 
 type OrdersBalanceReposponse struct {
 	Number     string    `json:"number"`
 	Status     string    `json:"status"`
-	Accrual    int       `json:"accrual"`
+	Accrual    float32       `json:"accrual"`
 	UploadedAt time.Time `json:"uploaded_at"`
 }
 
 type OrderWithdrawlResponse struct {
 	Order       string    `json:"order"`
-	Sum         int       `json:"sum"`
+	Sum         float32       `json:"sum"`
 	ProcessedAt time.Time `json:"processed_at"`
 }
 
 type BalanceResponse struct {
-	Balance   int `json:"current"`
-	Withdrawn int `json:"withdrawn"`
+	Balance   float32 `json:"current"`
+	Withdrawn float32 `json:"withdrawn"`
 }
 
 var OrderNumChanToCreate chan OrderToCreate

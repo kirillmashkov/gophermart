@@ -205,7 +205,7 @@ func (s *ServiceUser) GetBalance(ctx context.Context, userID string) (model.Bala
 	return s.repositoryuser.GetBalance(ctx, userID)
 }
 
-func (s *ServiceUser) CreateWithdrawnOrder(ctx context.Context, userID string, orderNum int64, sum int) error {
+func (s *ServiceUser) CreateWithdrawnOrder(ctx context.Context, userID string, orderNum int64, sum float32) error {
 	validOrderNum := s.validLuhn(orderNum)
 
 	if !validOrderNum {
