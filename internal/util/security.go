@@ -20,7 +20,7 @@ func NewSecurityUtil(tokenExp time.Duration, secretKey string) *SecurityUtil {
 	return &SecurityUtil{tokenExp: tokenExp, secretKey: secretKey}
 }
 
-func (s *SecurityUtil) BuildJWTString(userID string) (error, string) {
+func (s *SecurityUtil) BuildJWTString(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.tokenExp)),
@@ -30,8 +30,8 @@ func (s *SecurityUtil) BuildJWTString(userID string) (error, string) {
 
 	tokenString, err := token.SignedString([]byte(s.secretKey))
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
-	return nil, tokenString
+	return tokenString, nil
 }

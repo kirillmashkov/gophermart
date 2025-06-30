@@ -170,7 +170,7 @@ func GetBalanceOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err, response := app.ServiceUser.GetBalanceOrders(req.Context(), userID)
+	response, err := app.ServiceUser.GetBalanceOrders(req.Context(), userID)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
@@ -205,7 +205,7 @@ func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err, response := app.ServiceUser.GetWithdrawalOrders(req.Context(), userID)
+	response, err := app.ServiceUser.GetWithdrawalOrders(req.Context(), userID)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
@@ -240,7 +240,7 @@ func GetBalance(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err, response := app.ServiceUser.GetBalance(req.Context(), userID)
+	response, err := app.ServiceUser.GetBalance(req.Context(), userID)
 	if err != nil {
 		app.Log.Debug("error get balance", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)

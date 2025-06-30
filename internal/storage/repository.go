@@ -24,14 +24,14 @@ func NewRepositoryUser(db *Database, log *zap.Logger) *RepositoryUser {
 	return &RepositoryUser{db: db, log: log}
 }
 
-func (r *RepositoryUser) RegisterUser(ctx context.Context, login string, password string) (error, string) {
+func (r *RepositoryUser) RegisterUser(ctx context.Context, login string, password string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
 	tx, err := r.db.dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
-		return err, ""
+		return "", err
 	}
 	defer func() {
 		if err == nil {
@@ -51,16 +51,16 @@ func (r *RepositoryUser) RegisterUser(ctx context.Context, login string, passwor
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == pgerrcode.UniqueViolation {
-				return model.ErrDuplicateLogin, ""
+				return "", model.ErrDuplicateLogin
 			}
 		}
-		return err, ""
+		return "", err
 	}
 
-	return nil, userID
+	return userID, nil
 }
 
-func (r *RepositoryUser) GetUserId(ctx context.Context, login string, password string) (error, bool, string) {
+func (r *RepositoryUser) GetUserID(ctx context.Context, login string, password string) (bool, string, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
@@ -68,43 +68,43 @@ func (r *RepositoryUser) GetUserId(ctx context.Context, login string, password s
 	err := r.db.dbpool.QueryRow(ctx, "select id from profile where login = $1 and password = $2", login, password).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		r.log.Error("No user found or password is incorrect")
-		return nil, false, ""
+		return false, "", nil
 	}
 
 	if err != nil {
 		r.log.Error("Error when try to login user")
-		return err, false, ""
+		return false, "", nil
 	}
 
-	return nil, true, id
+	return true, id, nil
 }
 
-func (r *RepositoryUser) GetOrderByOrderNum(ctx context.Context, orderNum int64) (error, bool, string) {
+func (r *RepositoryUser) GetOrderByOrderNum(ctx context.Context, orderNum int64) (bool, string, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
 	var profileID string
 	err := r.db.dbpool.QueryRow(ctx, "select profile_id from orders where order_num = $1", orderNum).Scan(&profileID)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, false, ""
+		return false, "", nil
 	}
 
 	if err != nil {
 		r.log.Error("Error when GetOrderByOrderNum", zap.Int64("orderNum", orderNum))
-		return err, false, ""
+		return false, "", nil
 	}
 
-	return nil, true, profileID
+	return true, profileID, nil
 }
 
-func (r *RepositoryUser) CreateBalanceOrder(orderNum int64, userID string) (error, string) {
+func (r *RepositoryUser) CreateBalanceOrder(orderNum int64, userID string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutOperationDB)
 	defer cancel()
 
 	tx, err := r.db.dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
-		return err, ""
+		return "", err
 	}
 
 	defer func() {
@@ -123,10 +123,10 @@ func (r *RepositoryUser) CreateBalanceOrder(orderNum int64, userID string) (erro
 	_, err = tx.Exec(ctx, "insert into orders (id, profile_id, order_num, status, uploaded_at, type_order) values ($1, $2, $3, $4, $5, $6)", orderID, userID, orderNum, "NEW", time.Now(), "BALANCE")
 	if err != nil {
 		r.log.Error("Error insert into order", zap.Int64("orderNum", orderNum), zap.String("userID", userID), zap.Error(err))
-		return err, ""
+		return "", err
 	}
 
-	return nil, orderID
+	return orderID, nil
 }
 
 func (r *RepositoryUser) CreateWithdrawnOrder(ctx context.Context, orderNum int64, userID string, sum int) error {
@@ -208,27 +208,27 @@ func (r *RepositoryUser) UpdateOrder(id string, status string, accrual int, user
 	return nil
 }
 
-func (r *RepositoryUser) GetOrders(ctx context.Context, userID string, type_order string) (error, []model.OrdersDB) {
+func (r *RepositoryUser) GetOrders(ctx context.Context, userID string, typeOrder string) ([]model.OrdersDB, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
-	rows, err := r.db.dbpool.Query(ctx, "select order_num, status, sum, uploaded_at from orders where profile_id = $1 and type_order = $2 order by uploaded_at desc", userID, type_order)
+	rows, err := r.db.dbpool.Query(ctx, "select order_num, status, sum, uploaded_at from orders where profile_id = $1 and type_order = $2 order by uploaded_at desc", userID, typeOrder)
 	if err != nil {
 		r.log.Error("Error get orders", zap.String("UserID", userID), zap.Error(err))
-		return err, nil
+		return nil, err
 	}
 	defer rows.Close()
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByPos[model.OrdersDB])
 	if err != nil {
 		r.log.Error("Error collect rows", zap.String("UserID", userID), zap.Error(err))
-		return err, nil
+		return nil, err
 	}
 
-	return nil, res
+	return res, nil
 }
 
-func (r *RepositoryUser) GetBalance(ctx context.Context, userID string) (error, model.BalanceResponse) {
+func (r *RepositoryUser) GetBalance(ctx context.Context, userID string) (model.BalanceResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
@@ -237,8 +237,8 @@ func (r *RepositoryUser) GetBalance(ctx context.Context, userID string) (error, 
 
 	if err != nil {
 		r.log.Error("Error get balance", zap.String("UserID", userID))
-		return err, model.BalanceResponse{}
+		return model.BalanceResponse{}, err
 	}
 
-	return nil, balance
+	return balance, nil
 }

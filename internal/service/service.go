@@ -27,13 +27,13 @@ func NewServiceUser(log *zap.Logger, ru *storage.RepositoryUser, su *util.Securi
 
 func (s *ServiceUser) RegisterUser(ctx context.Context, login string, password string) (error, string) {
 	s.log.Info("Register new profile", zap.String("login", login), zap.String("password", password))
-	err, userID := s.repositoryuser.RegisterUser(ctx, login, password)
+	userID, err := s.repositoryuser.RegisterUser(ctx, login, password)
 	if err != nil {
 		s.log.Error("Can't register new user", zap.Error(err))
 		return err, ""
 	}
 
-	err, token := s.securityUtil.BuildJWTString(userID)
+	token, err := s.securityUtil.BuildJWTString(userID)
 	if err != nil {
 		s.log.Error("Can't generate token", zap.Error(err))
 		return err, ""
@@ -43,7 +43,7 @@ func (s *ServiceUser) RegisterUser(ctx context.Context, login string, password s
 }
 
 func (s *ServiceUser) LoginUser(ctx context.Context, login string, password string) (error, bool, string) {
-	err, checkUser, userID := s.repositoryuser.GetUserId(ctx, login, password)
+	checkUser, userID, err := s.repositoryuser.GetUserID(ctx, login, password)
 
 	if err != nil {
 		return err, false, ""
@@ -51,7 +51,7 @@ func (s *ServiceUser) LoginUser(ctx context.Context, login string, password stri
 
 	var token string = ""
 	if checkUser {
-		err, token = s.securityUtil.BuildJWTString(userID)
+		token, err = s.securityUtil.BuildJWTString(userID)
 		if err != nil {
 			s.log.Error("Error build jwt")
 			return err, false, ""
@@ -69,7 +69,7 @@ func (s *ServiceUser) Order(ctx context.Context, orderNum int64, userID string) 
 		return model.ErrWrongOrderNumber
 	}
 
-	err, orderExist, profileID := s.repositoryuser.GetOrderByOrderNum(ctx, orderNum)
+	orderExist, profileID, err := s.repositoryuser.GetOrderByOrderNum(ctx, orderNum)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func (s *ServiceUser) RequestOrderAccrual() {
 
 func (s *ServiceUser) CreateBalanceOrder() {
 	for o := range model.OrderNumChanToCreate {
-		err, orderID := s.repositoryuser.CreateBalanceOrder(o.OrderNum, o.UserID)
+		orderID, err := s.repositoryuser.CreateBalanceOrder(o.OrderNum, o.UserID)
 		if err != nil {
 			s.log.Error("Can't create order in db", zap.Int64("OrderNum", o.OrderNum))
 			continue
@@ -169,10 +169,10 @@ func (s *ServiceUser) checksum(number int64) int64 {
 	return luhn % 10
 }
 
-func (s *ServiceUser) GetBalanceOrders(ctx context.Context, userID string) (error, []model.OrdersBalanceReposponse) {
-	err, ordersDB := s.repositoryuser.GetOrders(ctx, userID, "BALANCE")
+func (s *ServiceUser) GetBalanceOrders(ctx context.Context, userID string) ([]model.OrdersBalanceReposponse, error) {
+	ordersDB, err := s.repositoryuser.GetOrders(ctx, userID, "BALANCE")
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	ordersBalance := make([]model.OrdersBalanceReposponse, len(ordersDB))
@@ -182,13 +182,13 @@ func (s *ServiceUser) GetBalanceOrders(ctx context.Context, userID string) (erro
 		ordersBalance[i].Status = val.Status
 		ordersBalance[i].UploadedAt = val.UploadedAt
 	}
-	return nil, ordersBalance
+	return ordersBalance, nil
 }
 
-func (s *ServiceUser) GetWithdrawalOrders(ctx context.Context, userID string) (error, []model.OrderWithdrawlResponse) {
-	err, ordersDB := s.repositoryuser.GetOrders(ctx, userID, "WITHDRAW")
+func (s *ServiceUser) GetWithdrawalOrders(ctx context.Context, userID string) ([]model.OrderWithdrawlResponse, error) {
+	ordersDB, err := s.repositoryuser.GetOrders(ctx, userID, "WITHDRAW")
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	ordersWithdrawn := make([]model.OrderWithdrawlResponse, len(ordersDB))
@@ -198,10 +198,10 @@ func (s *ServiceUser) GetWithdrawalOrders(ctx context.Context, userID string) (e
 		ordersWithdrawn[i].ProcessedAt = val.UploadedAt
 	}
 
-	return nil, ordersWithdrawn
+	return ordersWithdrawn, nil
 }
 
-func (s *ServiceUser) GetBalance(ctx context.Context, userID string) (error, model.BalanceResponse) {
+func (s *ServiceUser) GetBalance(ctx context.Context, userID string) (model.BalanceResponse, error) {
 	return s.repositoryuser.GetBalance(ctx, userID)
 }
 
