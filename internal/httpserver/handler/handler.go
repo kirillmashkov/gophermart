@@ -170,6 +170,7 @@ func GetBalanceOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
 	response, err := app.ServiceUser.GetBalanceOrders(req.Context(), userID)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
@@ -188,7 +189,6 @@ func GetBalanceOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
 }
 
@@ -205,6 +205,7 @@ func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
 	response, err := app.ServiceUser.GetWithdrawalOrders(req.Context(), userID)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
@@ -223,7 +224,6 @@ func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	
-	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusOK)
 }
 
@@ -240,6 +240,7 @@ func GetBalance(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-Type", "application/json")
 	response, err := app.ServiceUser.GetBalance(req.Context(), userID)
 	if err != nil {
 		app.Log.Debug("error get balance", zap.Error(err))
@@ -247,13 +248,12 @@ func GetBalance(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusOK)
-
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	res.WriteHeader(http.StatusOK)
 }
