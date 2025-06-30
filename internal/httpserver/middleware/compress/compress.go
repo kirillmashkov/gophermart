@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/kirillmashkov/gophermart/internal/app"
+	"go.uber.org/zap"
 )
 
 type compressWriter struct {
@@ -77,7 +78,7 @@ func Compress(next http.Handler) http.Handler {
 			resultWriter = compressWriter
 			defer func() {
 				if errClose := compressWriter.Close(); errClose != nil {
-					app.Log.Error("Can't close writer when compress")
+					app.Log.Error("Can't close writer when compress", zap.Error(errClose))
 				}
 			} ()
 		}
@@ -93,7 +94,7 @@ func Compress(next http.Handler) http.Handler {
 			r.Body = cr
 			defer func() {
 				if errClose := cr.Close(); errClose != nil {
-					app.Log.Error("Can't read request when decompress")
+					app.Log.Error("Can't read request when decompress", zap.Error(errClose))
 				}
 			}()
 		}
