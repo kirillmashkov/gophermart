@@ -39,7 +39,7 @@ func RegisterUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Authorization", "Bearer "+token)
-	res.WriteHeader(http.StatusCreated)
+	res.WriteHeader(http.StatusOK)
 }
 
 func LoginUser(res http.ResponseWriter, req *http.Request) {
@@ -181,15 +181,15 @@ func GetBalanceOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusOK)
-
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
 }
 
 func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
@@ -216,15 +216,15 @@ func GetWithdrawalsOrders(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Content-Type", "application/json")
-	res.WriteHeader(http.StatusOK)
-
 	encoder := json.NewEncoder(res)
 	if err := encoder.Encode(response); err != nil {
 		app.Log.Debug("error encoding response", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
 }
 
 func GetBalance(res http.ResponseWriter, req *http.Request) {
