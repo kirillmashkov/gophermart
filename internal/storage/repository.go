@@ -171,7 +171,7 @@ func (r *RepositoryUser) CreateWithdrawnOrder(ctx context.Context, orderNum int6
 	return nil
 }
 
-func (r *RepositoryUser) UpdateOrder(id string, status string, accrual int, userID string) error {
+func (r *RepositoryUser) UpdateOrder(id string, status string, accrual float32, userID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutOperationDB)
 	defer cancel()
 

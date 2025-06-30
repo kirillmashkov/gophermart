@@ -26,7 +26,7 @@ type WithdrawRequest struct {
 type AccrualResponse struct {
 	Order   string `json:"order"`
 	Status  string `json:"status"`
-	Accrual int    `json:"accrual"`
+	Accrual float32    `json:"accrual"`
 }
 
 type OrdersDB struct {

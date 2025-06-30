@@ -7,7 +7,7 @@ create table orders (id uuid primary key,
     order_num bigint not null,
     status order_status not null,
     uploaded_at timestamp with time zone not null,
-    sum int,
+    sum numeric(10, 2),
     type_order order_type not null,
     CONSTRAINT order_num_unique UNIQUE(order_num),
     CONSTRAINT fk_profile foreign key (profile_id) references profile (id));
