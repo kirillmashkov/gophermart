@@ -142,6 +142,8 @@ func CreateWithdrawnOrder(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	app.Log.Debug("Request Create Withdrawn Order", zap.Int64("OrderNum", request.OrderNum), zap.Float32("Sum", request.Sum))
+
 	err := app.ServiceUser.CreateWithdrawnOrder(req.Context(), userID, request.OrderNum, request.Sum)
 
 	if errors.Is(err, model.ErrNoBalance) {
