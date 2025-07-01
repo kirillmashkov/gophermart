@@ -21,7 +21,7 @@ type OrderToRequestAccrual struct {
 }
 
 type WithdrawRequest struct {
-	OrderNum int64 `json:"order"`
+	OrderNum string `json:"order"`
 	Sum float32 `json:"sum"`
 }
 

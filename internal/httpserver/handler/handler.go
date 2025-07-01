@@ -142,9 +142,16 @@ func CreateWithdrawnOrder(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app.Log.Info("Request Create Withdrawn Order", zap.Int64("OrderNum", request.OrderNum), zap.Float32("Sum", request.Sum))
+	orderNum, err := strconv.ParseInt(request.OrderNum, 10, 64)
+	if err != nil {
+		app.Log.Debug("order num not valid", zap.String("Order num", request.OrderNum), zap.Error(err))
+		http.Error(res, "order num not valid", http.StatusBadRequest)
+		return
+	}
 
-	err := app.ServiceUser.CreateWithdrawnOrder(req.Context(), userID, request.OrderNum, request.Sum)
+	app.Log.Info("Request Create Withdrawn Order", zap.Int64("OrderNum",  orderNum), zap.Float32("Sum", request.Sum))
+
+	err = app.ServiceUser.CreateWithdrawnOrder(req.Context(), userID, orderNum, request.Sum)
 
 	if errors.Is(err, model.ErrNoBalance) {
 		res.WriteHeader(http.StatusPaymentRequired)
