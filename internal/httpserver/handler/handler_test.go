@@ -313,6 +313,10 @@ func TestCreateOrder(t *testing.T) {
 			if test.request.auth {
 				resAuth := register(test.request.requestAuth)
 				tokenJWT = resAuth.Header.Get("Authorization")
+
+				if errClose := resAuth.Body.Close(); errClose != nil {
+					app.Log.Error("Can't close", zap.Error(errClose))
+				}
 			}
 
 			app.Log.Info("token", zap.String("token", tokenJWT))
