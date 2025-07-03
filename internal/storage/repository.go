@@ -28,7 +28,7 @@ func (r *RepositoryUser) RegisterUser(ctx context.Context, login string, passwor
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
-	tx, err := r.db.dbpool.Begin(ctx)
+	tx, err := r.db.Dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
 		return "", err
@@ -65,7 +65,7 @@ func (r *RepositoryUser) GetUserID(ctx context.Context, login string, password s
 	defer cancel()
 
 	var id string
-	err := r.db.dbpool.QueryRow(ctx, "select id from profile where login = $1 and password = $2", login, password).Scan(&id)
+	err := r.db.Dbpool.QueryRow(ctx, "select id from profile where login = $1 and password = $2", login, password).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		r.log.Error("No user found or password is incorrect")
 		return false, "", nil
@@ -84,7 +84,7 @@ func (r *RepositoryUser) GetOrderByOrderNum(ctx context.Context, orderNum int64)
 	defer cancel()
 
 	var profileID string
-	err := r.db.dbpool.QueryRow(ctx, "select profile_id from orders where order_num = $1", orderNum).Scan(&profileID)
+	err := r.db.Dbpool.QueryRow(ctx, "select profile_id from orders where order_num = $1", orderNum).Scan(&profileID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, "", nil
 	}
@@ -101,7 +101,7 @@ func (r *RepositoryUser) CreateBalanceOrder(orderNum int64, userID string) (stri
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutOperationDB)
 	defer cancel()
 
-	tx, err := r.db.dbpool.Begin(ctx)
+	tx, err := r.db.Dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
 		return "", err
@@ -133,7 +133,7 @@ func (r *RepositoryUser) CreateWithdrawnOrder(ctx context.Context, orderNum int6
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
-	tx, err := r.db.dbpool.Begin(ctx)
+	tx, err := r.db.Dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
 		return err
@@ -175,7 +175,7 @@ func (r *RepositoryUser) UpdateOrder(id string, status string, accrual float32, 
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutOperationDB)
 	defer cancel()
 
-	tx, err := r.db.dbpool.Begin(ctx)
+	tx, err := r.db.Dbpool.Begin(ctx)
 	if err != nil {
 		r.log.Error("Error open tran", zap.Error(err))
 		return err
@@ -212,7 +212,7 @@ func (r *RepositoryUser) GetOrders(ctx context.Context, userID string, typeOrder
 	ctx, cancel := context.WithTimeout(ctx, timeoutOperationDB)
 	defer cancel()
 
-	rows, err := r.db.dbpool.Query(ctx, "select order_num, status, sum, uploaded_at from orders where profile_id = $1 and type_order = $2 order by uploaded_at desc", userID, typeOrder)
+	rows, err := r.db.Dbpool.Query(ctx, "select order_num, status, sum, uploaded_at from orders where profile_id = $1 and type_order = $2 order by uploaded_at desc", userID, typeOrder)
 	if err != nil {
 		r.log.Error("Error get orders", zap.String("UserID", userID), zap.Error(err))
 		return nil, err
@@ -233,7 +233,7 @@ func (r *RepositoryUser) GetBalance(ctx context.Context, userID string) (model.B
 	defer cancel()
 
 	balance := model.BalanceResponse{}
-	err := r.db.dbpool.QueryRow(ctx, "select balance, withdrawn from profile where id = $1", userID).Scan(&balance.Balance, &balance.Withdrawn)
+	err := r.db.Dbpool.QueryRow(ctx, "select balance, withdrawn from profile where id = $1", userID).Scan(&balance.Balance, &balance.Withdrawn)
 
 	if err != nil {
 		r.log.Error("Error get balance", zap.String("UserID", userID))

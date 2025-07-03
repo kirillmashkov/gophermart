@@ -2,13 +2,10 @@ package security
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/kirillmashkov/gophermart/internal/app"
-	"github.com/kirillmashkov/gophermart/internal/util"
 )
 
 type UserIDType string
@@ -25,8 +22,7 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		splits := strings.Split(auth, "Bearer ")
-		token := splits[1]
+		token := (strings.Split(auth, "Bearer "))[1]
 		userID, err := getUserIDFromToken(token)
 
 		if err != nil {
@@ -42,15 +38,16 @@ func Auth(next http.Handler) http.Handler {
 
 func getUserIDFromToken(tokenString string) (string, error) {
 
-	claims := &util.Claims{}
+	// claims := &util.Claims{}
+	// token, err := jwt.ParseWithClaims(tokenString, claims,
+	// 	func(t *jwt.Token) (interface{}, error) {
+	// 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+	// 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+	// 		}
+	// 		return []byte(app.SecretKey), nil
+	// 	})
 
-	token, err := jwt.ParseWithClaims(tokenString, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
-			}
-			return []byte(app.SecretKey), nil
-		})
+	token, claims, err := app.SecurityUtil.ParseJWT(tokenString)
 
 	if err != nil {
 		app.Log.Warn("Can't parse token")

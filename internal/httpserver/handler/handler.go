@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,18 @@ import (
 	"github.com/kirillmashkov/gophermart/internal/model"
 	"go.uber.org/zap"
 )
+
+type Service interface {
+	RegisterUser(ctx context.Context, login string, password string) (string, error)
+	LoginUser(ctx context.Context, login string, password string) (bool, string, error)
+	Order(ctx context.Context, orderNum int64, userID string) error
+	RequestOrderAccrual()
+	CreateBalanceOrder()
+	GetBalanceOrders(ctx context.Context, userID string) ([]model.OrdersBalanceReposponse, error)
+	GetWithdrawalOrders(ctx context.Context, userID string) ([]model.OrderWithdrawlResponse, error)
+	GetBalance(ctx context.Context, userID string) (model.BalanceResponse, error)
+	CreateWithdrawnOrder(ctx context.Context, userID string, orderNum int64, sum float32) error
+}
 
 func RegisterUser(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
@@ -73,25 +86,30 @@ func LoginUser(res http.ResponseWriter, req *http.Request) {
 
 func CreateOrder(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
+		app.Log.Error("Only POST requests are allowed!")
 		http.Error(res, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
 
 	contentType := req.Header.Get("Content-Type")
 	if contentType != "text/plain" {
+		app.Log.Error("Only text/plain content in body are allowed!")
 		http.Error(res, "Only text/plain content in body are allowed!", http.StatusBadRequest)
 		return
 	}
 
 	u := security.UserIDType("userID")
 	userID := fmt.Sprintf("%v", req.Context().Value(u))
+	app.Log.Info("UserID", zap.String("UserID", userID))
 	if userID == "" {
+		app.Log.Error("No userID. Unauthorized")
 		res.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	bodyBytes, err := io.ReadAll(req.Body)
 	if err != nil {
+		app.Log.Error("Can't read order number")
 		http.Error(res, "Can't read order number", http.StatusInternalServerError)
 		return
 	}

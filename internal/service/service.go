@@ -9,19 +9,29 @@ import (
 
 	"github.com/kirillmashkov/gophermart/internal/config"
 	"github.com/kirillmashkov/gophermart/internal/model"
-	"github.com/kirillmashkov/gophermart/internal/storage"
 	"github.com/kirillmashkov/gophermart/internal/util"
 	"go.uber.org/zap"
 )
 
+type Repository interface {
+	RegisterUser(ctx context.Context, login string, password string) (string, error)
+	GetUserID(ctx context.Context, login string, password string) (bool, string, error)
+	GetOrderByOrderNum(ctx context.Context, orderNum int64) (bool, string, error)
+	CreateBalanceOrder(orderNum int64, userID string) (string, error)
+	CreateWithdrawnOrder(ctx context.Context, orderNum int64, userID string, sum float32) error
+	UpdateOrder(id string, status string, accrual float32, userID string) error
+	GetOrders(ctx context.Context, userID string, typeOrder string) ([]model.OrdersDB, error)
+	GetBalance(ctx context.Context, userID string) (model.BalanceResponse, error)
+}
+
 type ServiceUser struct {
 	log            *zap.Logger
-	repositoryuser *storage.RepositoryUser
+	repositoryuser Repository
 	securityUtil   *util.SecurityUtil
 	cfg            *config.ServerConfig
 }
 
-func NewServiceUser(log *zap.Logger, ru *storage.RepositoryUser, su *util.SecurityUtil, cfg *config.ServerConfig) *ServiceUser {
+func NewServiceUser(log *zap.Logger, ru Repository, su *util.SecurityUtil, cfg *config.ServerConfig) *ServiceUser {
 	return &ServiceUser{log: log, repositoryuser: ru, securityUtil: su, cfg: cfg}
 }
 
