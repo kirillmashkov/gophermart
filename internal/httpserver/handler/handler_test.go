@@ -111,6 +111,10 @@ func TestRegisterUser(t *testing.T) {
 			if res.StatusCode == 200 {
 				checkToken(t, *res, test.request.Login)
 			}
+
+			if errClose := res.Body.Close(); errClose != nil {
+				app.Log.Error("Can't close", zap.Error(errClose))
+			}
 		})
 	}
 }
@@ -161,6 +165,11 @@ func TestLoginUser(t *testing.T) {
 			if res.StatusCode == 200 {
 				checkToken(t, *res, test.request.Login)
 			}
+
+			if errClose := res.Body.Close(); errClose != nil {
+				app.Log.Error("Can't close", zap.Error(errClose))
+			}
+
 		})
 	}
 }
@@ -316,6 +325,11 @@ func TestCreateOrder(t *testing.T) {
 			res := w.Result()
 
 			assert.Equal(t, test.want.code, res.StatusCode)
+
+			if errClose := res.Body.Close(); errClose != nil {
+				app.Log.Error("Can't close", zap.Error(errClose))
+			}
+
 		})
 	}
 }
