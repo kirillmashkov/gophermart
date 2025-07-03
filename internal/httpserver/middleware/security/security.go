@@ -37,16 +37,6 @@ func Auth(next http.Handler) http.Handler {
 }
 
 func getUserIDFromToken(tokenString string) (string, error) {
-
-	// claims := &util.Claims{}
-	// token, err := jwt.ParseWithClaims(tokenString, claims,
-	// 	func(t *jwt.Token) (interface{}, error) {
-	// 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-	// 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
-	// 		}
-	// 		return []byte(app.SecretKey), nil
-	// 	})
-
 	token, claims, err := app.SecurityUtil.ParseJWT(tokenString)
 
 	if err != nil {
